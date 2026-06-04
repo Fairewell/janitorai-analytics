@@ -3,223 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JanitorAI • WILD TOURISTS</title>
+    <title>WILD TOURISTS • JanitorAI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap');
-
         body { font-family: 'Inter', system-ui, sans-serif; background: #0a0a0a; }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-        .font-display { font-family: 'Space Grotesk', 'Inter', sans-serif; }
-
-        .terminal-window {
-            background: #111;
-            border: 1px solid #333;
+        .terminal-window { background: #111; border: 1px solid #333; }
+        .section-title { font-size: 12px; font-weight: 600; letter-spacing: 1px; color: #888; }
+        .timeline {
+            position: relative;
+            padding-left: 40px;
         }
-
-        .stat-card {
-            background: #111;
-            border: 1px solid #222;
-        }
-
-        .section-title {
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            color: #888;
-        }
-
-        .nav-item.active {
-            background: #1a1a1a;
-            color: #00f9ff;
-        }
-
-        .data-row:hover { background: #1a1a1a; }
-
-        .chat-tree { font-size: 13px; }
-        .timeline-item { position: relative; }
-        .timeline-item:before {
+        .timeline::before {
             content: '';
             position: absolute;
-            left: 11px;
+            left: 19px;
             top: 0;
-            bottom: -8px;
-            width: 2px;
-            background: #333;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(#333, #222);
         }
-        .timeline-item:last-child:before { display: none; }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 12px;
+        }
+        .timeline-item:last-child { margin-bottom: 0; }
+        .timeline-dot {
+            position: absolute;
+            left: 10px;
+            top: 8px;
+            width: 18px;
+            height: 18px;
+            background: #111;
+            border: 3px solid #00f9ff;
+            border-radius: 9999px;
+            z-index: 2;
+        }
+        .timeline-branch {
+            position: relative;
+            margin-left: 32px;
+            padding-left: 20px;
+            border-left: 2px dashed #444;
+        }
+        .timeline-branch::before {
+            content: '';
+            position: absolute;
+            left: -2px;
+            top: 10px;
+            width: 20px;
+            height: 2px;
+            background: #444;
+        }
     </style>
 </head>
 <body class="bg-[#0a0a0a] text-[#ddd]">
     <div class="max-w-[1480px] mx-auto">
-        <!-- Top Bar -->
         <div class="flex items-center justify-between px-6 py-4 border-b border-[#222]">
-            <div class="flex items-center gap-x-4">
-                <div class="flex items-center gap-x-3">
-                    <div class="w-8 h-8 bg-[#00f9ff] flex items-center justify-center rounded">
-                        <i class="fa-solid fa-terminal text-black text-xl"></i>
-                    </div>
-                    <div>
-                        <span class="font-display text-2xl font-bold tracking-[-1.5px]">WILD TOURISTS</span>
-                        <span class="text-[#00f9ff] text-xs align-super ml-1">v2.1</span>
-                    </div>
-                </div>
-            </div>
-
             <div class="flex items-center gap-x-3">
-                <div class="px-4 py-1.5 bg-[#111] border border-[#333] rounded-3xl flex items-center gap-x-2 text-xs">
-                    <i class="fa-solid fa-user text-[#00f9ff]"></i>
-                    <span class="font-mono">SageLovesJiro</span>
+                <div class="w-8 h-8 bg-[#00f9ff] flex items-center justify-center rounded">
+                    <i class="fa-solid fa-terminal text-black"></i>
                 </div>
-                <button onclick="location.reload()" class="px-4 py-1.5 text-xs bg-[#1a1a1a] hover:bg-[#222] border border-[#333] rounded-3xl flex items-center gap-x-2">
-                    <i class="fa-solid fa-sync-alt"></i>
-                    <span>RESET</span>
-                </button>
+                <span class="font-bold text-2xl tracking-tight">WILD TOURISTS</span>
             </div>
+            <button onclick="location.reload()" class="px-4 py-1.5 text-xs bg-[#1a1a1a] border border-[#333] rounded-3xl flex items-center gap-x-2">
+                <i class="fa-solid fa-sync"></i> <span>RESET</span>
+            </button>
         </div>
 
-        <div class="flex">
-            <!-- Sidebar -->
-            <div class="w-64 border-r border-[#222] p-4 hidden lg:block">
-                <div class="mb-6">
-                    <div class="section-title mb-2 px-3">НАВИГАЦИЯ</div>
-                    <div class="space-y-1 text-sm">
-                        <div onclick="showTab('overview')" class="nav-item active flex items-center gap-x-3 px-3 py-2 rounded cursor-pointer" data-tab="overview">
-                            <i class="fa-solid fa-home w-4"></i> <span>Overview</span>
-                        </div>
-                        <div onclick="showTab('activity')" class="nav-item flex items-center gap-x-3 px-3 py-2 rounded cursor-pointer" data-tab="activity">
-                            <i class="fa-solid fa-chart-line w-4"></i> <span>Activity</span>
-                        </div>
-                        <div onclick="showTab('characters')" class="nav-item flex items-center gap-x-3 px-3 py-2 rounded cursor-pointer" data-tab="characters">
-                            <i class="fa-solid fa-users w-4"></i> <span>Characters</span>
-                        </div>
-                    </div>
+        <div class="p-6">
+            <div id="upload-section" class="max-w-md mx-auto mt-10">
+                <div class="terminal-window rounded-2xl p-8 text-center border border-[#333]">
+                    <div class="text-[#00f9ff] text-5xl mb-4"><i class="fa-solid fa-upload"></i></div>
+                    <h2 class="text-2xl font-semibold mb-2">Загрузи экспорт</h2>
+                    <label class="cursor-pointer inline-block px-8 py-3 bg-[#00f9ff] text-black font-semibold rounded-2xl">
+                        ВЫБРАТЬ JSON
+                        <input type="file" id="json-upload" class="hidden" onchange="handleFileUpload(event)">
+                    </label>
                 </div>
             </div>
 
-            <!-- Main -->
-            <div class="flex-1 p-6">
-                <div id="upload-section" class="max-w-md mx-auto mt-12">
-                    <div class="terminal-window rounded-2xl p-8 text-center border border-[#333]">
-                        <div class="text-[#00f9ff] text-5xl mb-4"><i class="fa-solid fa-upload"></i></div>
-                        <h2 class="text-2xl font-semibold mb-2">Загрузи экспорт</h2>
-                        <p class="text-[#888] text-sm mb-6">JSON из Tampermonkey</p>
-                        <label class="cursor-pointer inline-block px-8 py-3 bg-[#00f9ff] text-black font-semibold rounded-2xl hover:bg-white">
-                            ВЫБРАТЬ ФАЙЛ
-                            <input type="file" id="json-upload" accept=".json" class="hidden" onchange="handleFileUpload(event)">
-                        </label>
+            <div id="dashboard" class="hidden">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div class="stat-card bg-[#111] border border-[#222] rounded-2xl p-5">
+                        <div class="text-xs text-[#888]">ПЕРСОНАЖЕЙ</div>
+                        <div id="stat-characters" class="text-4xl font-bold">—</div>
+                    </div>
+                    <div class="stat-card bg-[#111] border border-[#222] rounded-2xl p-5">
+                        <div class="text-xs text-[#888]">ЧАТОВ</div>
+                        <div id="stat-threads" class="text-4xl font-bold">—</div>
+                    </div>
+                    <div class="stat-card bg-[#111] border border-[#222] rounded-2xl p-5">
+                        <div class="text-xs text-[#888]">СООБЩЕНИЙ</div>
+                        <div id="stat-messages" class="text-4xl font-bold">—</div>
+                    </div>
+                    <div class="stat-card bg-[#111] border border-[#222] rounded-2xl p-5">
+                        <div class="text-xs text-[#888]">С ДЕТАЛЯМИ</div>
+                        <div id="stat-detailed" class="text-4xl font-bold">—</div>
                     </div>
                 </div>
 
-                <div id="dashboard" class="hidden">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                        <div class="stat-card rounded-2xl p-5 border border-[#222]">
-                            <div class="text-[#888] text-xs mb-1">ПЕРСОНАЖЕЙ</div>
-                            <div id="stat-characters" class="text-4xl font-bold">—</div>
-                        </div>
-                        <div class="stat-card rounded-2xl p-5 border border-[#222]">
-                            <div class="text-[#888] text-xs mb-1">ЧАТОВ</div>
-                            <div id="stat-threads" class="text-4xl font-bold">—</div>
-                        </div>
-                        <div class="stat-card rounded-2xl p-5 border border-[#222]">
-                            <div class="text-[#888] text-xs mb-1">СООБЩЕНИЙ</div>
-                            <div id="stat-messages" class="text-4xl font-bold">—</div>
-                        </div>
-                        <div class="stat-card rounded-2xl p-5 border border-[#222]">
-                            <div class="text-[#888] text-xs mb-1">С ДЕТАЛЯМИ</div>
-                            <div id="stat-detailed" class="text-4xl font-bold">—</div>
-                        </div>
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+                    <div class="terminal-window rounded-2xl p-6 border border-[#222]">
+                        <div class="section-title mb-4">ТОП ПЕРСОНАЖИ</div>
+                        <div id="top-characters" class="space-y-1"></div>
                     </div>
+                    <div class="terminal-window rounded-2xl p-6 border border-[#222]">
+                        <div class="section-title mb-4">ТОП ПЕРСОНЫ</div>
+                        <div id="top-personas" class="space-y-1"></div>
+                    </div>
+                </div>
 
-                    <div id="tab-overview">
-                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                            <div class="terminal-window rounded-2xl p-6 border border-[#222]">
-                                <div class="section-title mb-4">ТОП ПЕРСОНАЖИ</div>
-                                <div id="top-characters" class="space-y-1 text-sm"></div>
-                            </div>
-                            <div class="terminal-window rounded-2xl p-6 border border-[#222]">
-                                <div class="section-title mb-4">ТОП ПЕРСОНЫ</div>
-                                <div id="top-personas" class="space-y-1 text-sm"></div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="terminal-window rounded-2xl p-6 border border-[#222] mb-6">
+                    <div class="section-title mb-4">АКТИВНОСТЬ ПО МЕСЯЦАМ</div>
+                    <div class="h-72"><canvas id="activity-chart"></canvas></div>
+                </div>
 
-                    <div id="tab-activity" class="hidden">
-                        <div class="terminal-window rounded-2xl p-6 border border-[#222]">
-                            <div class="section-title mb-4">АКТИВНОСТЬ ПО МЕСЯЦАМ</div>
-                            <div class="h-80"><canvas id="activity-chart"></canvas></div>
-                        </div>
-                    </div>
-
-                    <div id="tab-characters" class="hidden">
-                        <div class="terminal-window rounded-2xl p-6 border border-[#222]">
-                            <div class="flex justify-between mb-4">
-                                <div class="section-title">ВСЕ ПЕРСОНАЖИ</div>
-                                <input type="text" id="search-char" placeholder="Поиск..." class="bg-[#1a1a1a] border border-[#333] text-sm px-3 py-1 rounded w-64" onkeyup="filterCharacters()">
-                            </div>
-                            <div id="characters-list" class="max-h-[600px] overflow-auto text-sm"></div>
-                        </div>
-                    </div>
+                <div class="terminal-window rounded-2xl p-6 border border-[#222]">
+                    <div class="section-title mb-4">ВСЕ ПЕРСОНАЖИ</div>
+                    <input type="text" id="search" placeholder="Поиск персонажа..." class="w-full bg-[#1a1a1a] border border-[#333] px-4 py-2 rounded mb-4" onkeyup="filterCharacters()">
+                    <div id="characters-list" class="max-h-[500px] overflow-auto"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal -->
-    <div id="modal" onclick="if (event.target.id === 'modal') closeModal()" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
-        <div onclick="event.stopImmediatePropagation()" class="terminal-window w-full max-w-5xl rounded-2xl border border-[#00f9ff]/30 max-h-[92vh] flex flex-col">
-            
-            <!-- Header -->
+    <!-- Modal with proper tree -->
+    <div id="modal" onclick="if(event.target.id==='modal') closeModal()" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+        <div onclick="event.stopImmediatePropagation()" class="terminal-window w-full max-w-4xl rounded-2xl border border-[#00f9ff]/40 max-h-[92vh] flex flex-col">
             <div class="px-6 py-4 border-b border-[#333] flex justify-between items-center">
-                <div>
-                    <div id="modal-title" class="font-semibold text-2xl"></div>
-                    <div id="modal-subtitle" class="text-xs text-[#888] mt-0.5"></div>
-                </div>
-                <button onclick="closeModal()" class="text-3xl text-[#666] hover:text-white leading-none">×</button>
+                <div id="modal-title" class="text-2xl font-semibold"></div>
+                <button onclick="closeModal()" class="text-3xl text-[#666] hover:text-white">×</button>
             </div>
 
-            <div class="p-6 overflow-auto flex-1">
-                
-                <!-- Quick Stats -->
+            <div class="p-6 overflow-auto">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    <div class="bg-[#0a0a0a] border border-[#222] rounded-xl p-4">
+                    <div class="bg-[#0a0a0a] p-4 rounded-xl border border-[#222]">
                         <div class="text-xs text-[#888]">Тредов</div>
                         <div id="modal-threads" class="text-3xl font-bold"></div>
                     </div>
-                    <div class="bg-[#0a0a0a] border border-[#222] rounded-xl p-4">
+                    <div class="bg-[#0a0a0a] p-4 rounded-xl border border-[#222]">
                         <div class="text-xs text-[#888]">Сообщений</div>
                         <div id="modal-messages" class="text-3xl font-bold text-[#00f9ff]"></div>
                     </div>
-                    <div class="bg-[#0a0a0a] border border-[#222] rounded-xl p-4">
+                    <div class="bg-[#0a0a0a] p-4 rounded-xl border border-[#222]">
                         <div class="text-xs text-[#888]">Первый чат</div>
                         <div id="modal-first" class="font-mono text-sm"></div>
                     </div>
-                    <div class="bg-[#0a0a0a] border border-[#222] rounded-xl p-4">
+                    <div class="bg-[#0a0a0a] p-4 rounded-xl border border-[#222]">
                         <div class="text-xs text-[#888]">Последний чат</div>
                         <div id="modal-last" class="font-mono text-sm"></div>
                     </div>
                 </div>
 
-                <!-- Global Timeline -->
-                <div class="mb-8">
-                    <div class="section-title mb-3 flex items-center gap-x-2">
-                        <i class="fa-solid fa-clock"></i>
-                        <span>ХРОНОЛОГИЯ ВСЕХ ЧАТОВ</span>
-                    </div>
-                    <div id="global-timeline" class="bg-[#0a0a0a] border border-[#222] rounded-2xl p-4 max-h-[320px] overflow-auto"></div>
-                </div>
-
-                <!-- Tree by Personas -->
+                <!-- Visual Tree -->
                 <div>
-                    <div class="section-title mb-3 flex items-center gap-x-2">
-                        <i class="fa-solid fa-project-diagram"></i>
-                        <span>ДЕРЕВО ПО ПЕРСОНАМ</span>
-                    </div>
-                    <div id="chat-tree" class="bg-[#0a0a0a] border border-[#222] rounded-2xl p-4"></div>
+                    <div class="section-title mb-3">ДЕРЕВО ЧАТОВ (хронология + ветки по персонам)</div>
+                    <div id="visual-tree" class="timeline bg-[#0a0a0a] border border-[#222] rounded-2xl p-6"></div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -231,72 +172,62 @@
 
         const MONTHS = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
 
-        function formatDate(dateStr) {
-            if (!dateStr) return '—';
-            const d = new Date(dateStr);
+        function formatDate(str) {
+            if (!str) return '—';
+            const d = new Date(str);
             return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
         }
 
         function processData(raw) {
-            const characters = raw.characters || [];
-            const detailed = raw.detailedChats || {};
+            const chars = raw.characters || [];
+            const det = raw.detailedChats || {};
+            const map = {};
 
-            const charMap = {};
-            characters.forEach(c => {
-                charMap[c.character_id] = { ...c, totalMessages: 0, chats: [] };
-            });
+            chars.forEach(c => map[c.character_id] = {...c, totalMessages: 0, chats: []});
 
-            let totalMessages = 0;
-
-            Object.keys(detailed).forEach(charId => {
-                if (!charMap[charId]) return;
-                const chats = detailed[charId].chats || [];
-                chats.forEach(chat => {
-                    const msgs = chat.chat_count || 0;
-                    charMap[charId].totalMessages += msgs;
-                    totalMessages += msgs;
-
-                    charMap[charId].chats.push({
-                        id: chat.id,
-                        date: chat.updated_at,
-                        messages: msgs,
-                        persona: (chat.personas && chat.personas[0]) ? chat.personas[0].name : 'Unknown'
+            let totalMsg = 0;
+            Object.keys(det).forEach(id => {
+                if (!map[id]) return;
+                (det[id].chats || []).forEach(ch => {
+                    const m = ch.chat_count || 0;
+                    map[id].totalMessages += m;
+                    totalMsg += m;
+                    map[id].chats.push({
+                        date: ch.updated_at,
+                        messages: m,
+                        persona: ch.personas?.[0]?.name || 'Unknown'
                     });
                 });
             });
 
             return {
-                characters: Object.values(charMap),
-                totalCharacters: characters.length,
-                totalThreads: characters.reduce((s, c) => s + (c.chat_count || 0), 0),
-                totalMessages,
-                detailedCount: Object.keys(detailed).length
+                characters: Object.values(map),
+                totalCharacters: chars.length,
+                totalThreads: chars.reduce((s,c) => s + (c.chat_count||0), 0),
+                totalMessages: totalMsg,
+                detailedCount: Object.keys(det).length
             };
         }
 
         async function handleFileUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+            const f = e.target.files[0];
+            if (!f) return;
+            const up = document.getElementById('upload-section');
+            const db = document.getElementById('dashboard');
 
-            const upload = document.getElementById('upload-section');
-            const dash = document.getElementById('dashboard');
+            up.innerHTML = `<div class="text-center py-12"><i class="fa-spin fa-solid fa-spinner text-4xl text-[#00f9ff]"></i></div>`;
 
-            upload.innerHTML = `<div class="text-center py-12 text-[#00f9ff]"><i class="fa-solid fa-spinner fa-spin text-4xl"></i><p class="mt-4">Загружаем...</p></div>`;
+            const text = await f.text();
+            const raw = JSON.parse(text);
+            currentData = processData(raw);
+            allCharacters = currentData.characters;
 
-            try {
-                const text = await file.text();
-                const raw = JSON.parse(text);
-                currentData = processData(raw);
-                allCharacters = currentData.characters;
+            updateStats();
+            renderTop();
+            renderActivity(raw);
 
-                updateStats();
-                renderOverview();
-
-                upload.style.display = 'none';
-                dash.classList.remove('hidden');
-            } catch (err) {
-                upload.innerHTML = `<div class="text-red-400 text-center py-8">Ошибка: ${err.message}</div>`;
-            }
+            up.style.display = 'none';
+            db.classList.remove('hidden');
         }
 
         function updateStats() {
@@ -307,107 +238,89 @@
             document.getElementById('stat-detailed').textContent = d.detailedCount;
         }
 
-        function renderOverview() {
-            const topChars = [...currentData.characters].sort((a,b) => b.totalMessages - a.totalMessages).slice(0, 8);
+        function renderTop() {
+            const sorted = [...currentData.characters].sort((a,b)=>b.totalMessages-a.totalMessages).slice(0,8);
             const c1 = document.getElementById('top-characters');
             c1.innerHTML = '';
-
-            topChars.forEach((c, i) => {
-                const div = document.createElement('div');
-                div.className = `flex justify-between px-3 py-2 rounded cursor-pointer hover:bg-[#1a1a1a]`;
-                div.innerHTML = `
-                    <div class="flex items-center gap-x-3">
-                        <span class="text-xs text-[#666] w-5">${i+1}</span>
-                        <span class="font-medium">${c.name}</span>
-                    </div>
-                    <div class="text-right font-semibold text-[#00f9ff]">${c.totalMessages}</div>
-                `;
-                div.onclick = () => showCharacterModal(c);
-                c1.appendChild(div);
+            sorted.forEach((c,i) => {
+                const d = document.createElement('div');
+                d.className = 'flex justify-between px-3 py-2 rounded hover:bg-[#1a1a1a] cursor-pointer';
+                d.innerHTML = `<div class="flex gap-x-3"><span class="text-xs text-[#666] w-5">${i+1}</span><span>${c.name}</span></div><span class="font-semibold text-[#00f9ff]">${c.totalMessages}</span>`;
+                d.onclick = () => showModal(c);
+                c1.appendChild(d);
             });
 
-            // Top personas
-            const personaMap = {};
-            currentData.characters.forEach(c => c.chats.forEach(ch => {
-                personaMap[ch.persona] = (personaMap[ch.persona] || 0) + ch.messages;
-            }));
-
-            const topP = Object.entries(personaMap).sort((a,b) => b[1]-a[1]).slice(0,8);
+            const pMap = {};
+            currentData.characters.forEach(c => c.chats.forEach(ch => pMap[ch.persona] = (pMap[ch.persona]||0) + ch.messages));
+            const topP = Object.entries(pMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
             const c2 = document.getElementById('top-personas');
             c2.innerHTML = '';
-            topP.forEach(([name, count]) => {
-                const div = document.createElement('div');
-                div.className = `flex justify-between px-3 py-2`;
-                div.innerHTML = `<span>${name}</span><span class="font-semibold text-emerald-400">${count}</span>`;
-                c2.appendChild(div);
+            topP.forEach(([n,c]) => {
+                const d = document.createElement('div');
+                d.className = 'flex justify-between px-3 py-2';
+                d.innerHTML = `<span>${n}</span><span class="font-semibold text-emerald-400">${c}</span>`;
+                c2.appendChild(d);
             });
         }
 
-        function showCharacterModal(char) {
+        function renderActivity(raw) {
+            const monthly = {};
+            if (raw.detailedChats) {
+                Object.values(raw.detailedChats).forEach(d => {
+                    (d.chats||[]).forEach(ch => {
+                        if (ch.updated_at) {
+                            const m = ch.updated_at.substring(0,7);
+                            monthly[m] = (monthly[m]||0) + (ch.chat_count||0);
+                        }
+                    });
+                });
+            }
+            const labels = Object.keys(monthly).sort();
+            const values = labels.map(k => monthly[k]);
+
+            const ctx = document.getElementById('activity-chart');
+            if (activityChart) activityChart.destroy();
+            activityChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets: [{ data: values, borderColor: '#00f9ff', borderWidth: 2, tension: 0.3, fill: true, backgroundColor: 'rgba(0,249,255,0.1)' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: {legend:{display:false}}, scales: { y:{beginAtZero:true, grid:{color:'#222'}}, x:{grid:{color:'#222'}} } }
+            });
+        }
+
+        function showModal(char) {
             const modal = document.getElementById('modal');
             document.getElementById('modal-title').innerHTML = char.name;
 
-            const sortedChats = [...char.chats].sort((a,b) => new Date(a.date) - new Date(b.date));
+            const sorted = [...char.chats].sort((a,b) => new Date(a.date) - new Date(b.date));
 
-            document.getElementById('modal-threads').textContent = sortedChats.length;
+            document.getElementById('modal-threads').textContent = sorted.length;
             document.getElementById('modal-messages').textContent = char.totalMessages;
-            document.getElementById('modal-first').textContent = formatDate(sortedChats[0]?.date);
-            document.getElementById('modal-last').textContent = formatDate(sortedChats[sortedChats.length-1]?.date);
+            document.getElementById('modal-first').textContent = formatDate(sorted[0]?.date);
+            document.getElementById('modal-last').textContent = formatDate(sorted[sorted.length-1]?.date);
 
-            // Global Timeline
-            const globalContainer = document.getElementById('global-timeline');
-            globalContainer.innerHTML = '';
+            // Visual Tree
+            const container = document.getElementById('visual-tree');
+            container.innerHTML = '';
 
-            sortedChats.forEach(ch => {
-                const div = document.createElement('div');
-                div.className = `timeline-item flex gap-x-4 px-3 py-2 text-sm border-l-2 border-[#00f9ff]/30 ml-3`;
-                div.innerHTML = `
-                    <div class="w-28 font-mono text-[#888] flex-shrink-0">${formatDate(ch.date)}</div>
+            sorted.forEach((ch, index) => {
+                const item = document.createElement('div');
+                item.className = 'timeline-item flex items-start gap-x-4';
+
+                item.innerHTML = `
+                    <div class="timeline-dot"></div>
                     <div class="flex-1">
-                        <span class="font-semibold text-[#00f9ff]">${ch.persona}</span>
-                        <span class="text-xs text-[#666] ml-2">${ch.messages} сообщений</span>
+                        <div class="flex items-center gap-x-3">
+                            <div class="font-mono text-sm text-[#888] w-28">${formatDate(ch.date)}</div>
+                            <div class="timeline-branch flex-1 flex items-center justify-between bg-[#1a1a1a] px-4 py-2 rounded border border-[#333]">
+                                <div>
+                                    <span class="font-semibold text-[#00f9ff]">${ch.persona}</span>
+                                </div>
+                                <div class="font-semibold text-right">${ch.messages} <span class="text-xs text-[#666]">сообщ.</span></div>
+                            </div>
+                        </div>
                     </div>
                 `;
-                globalContainer.appendChild(div);
-            });
-
-            // Tree by Personas
-            const treeContainer = document.getElementById('chat-tree');
-            treeContainer.innerHTML = '';
-
-            const byPersona = {};
-            char.chats.forEach(ch => {
-                if (!byPersona[ch.persona]) byPersona[ch.persona] = [];
-                byPersona[ch.persona].push(ch);
-            });
-
-            Object.entries(byPersona).forEach(([persona, chats]) => {
-                const total = chats.reduce((s, c) => s + c.messages, 0);
-                const personaBlock = document.createElement('div');
-                personaBlock.className = 'mb-6 last:mb-0';
-
-                personaBlock.innerHTML = `
-                    <div class="flex items-center justify-between mb-2 px-2">
-                        <div class="font-semibold text-[#00f9ff]">${persona}</div>
-                        <div class="text-xs text-[#888]">${chats.length} тредов • ${total} сообщений</div>
-                    </div>
-                `;
-
-                const list = document.createElement('div');
-                list.className = 'pl-5 border-l border-[#333] space-y-px';
-
-                chats.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(ch => {
-                    const item = document.createElement('div');
-                    item.className = 'flex justify-between text-xs px-3 py-1.5 hover:bg-[#1a1a1a] rounded';
-                    item.innerHTML = `
-                        <div class="font-mono text-[#888]">${formatDate(ch.date)}</div>
-                        <div class="font-semibold">${ch.messages} сообщ.</div>
-                    `;
-                    list.appendChild(item);
-                });
-
-                personaBlock.appendChild(list);
-                treeContainer.appendChild(personaBlock);
+                container.appendChild(item);
             });
 
             modal.classList.remove('hidden');
@@ -415,58 +328,25 @@
         }
 
         function closeModal() {
-            const modal = document.getElementById('modal');
-            modal.classList.remove('flex');
-            modal.classList.add('hidden');
+            const m = document.getElementById('modal');
+            m.classList.remove('flex');
+            m.classList.add('hidden');
         }
 
         function filterCharacters() {
-            const term = document.getElementById('search-char').value.toLowerCase();
-            const container = document.getElementById('characters-list');
-            container.innerHTML = '';
-
-            allCharacters.filter(c => c.name.toLowerCase().includes(term)).forEach(char => {
-                const div = document.createElement('div');
-                div.className = 'data-row flex justify-between items-center px-4 py-3 border-b border-[#222] cursor-pointer';
-                div.innerHTML = `
-                    <div>
-                        <div class="font-medium">${char.name}</div>
-                        <div class="text-xs text-[#666]">${char.chats.length} тредов • ${char.totalMessages} сообщений</div>
-                    </div>
-                    <i class="fa-solid fa-chevron-right text-[#444]"></i>
-                `;
-                div.onclick = () => showCharacterModal(char);
-                container.appendChild(div);
+            const term = document.getElementById('search').value.toLowerCase();
+            const cont = document.getElementById('characters-list');
+            cont.innerHTML = '';
+            allCharacters.filter(c => c.name.toLowerCase().includes(term)).forEach(c => {
+                const d = document.createElement('div');
+                d.className = 'flex justify-between px-4 py-3 border-b border-[#222] cursor-pointer hover:bg-[#1a1a1a]';
+                d.innerHTML = `<div><div class="font-medium">${c.name}</div><div class="text-xs text-[#666]">${c.chats.length} тредов • ${c.totalMessages} сообщ.</div></div><i class="fa-solid fa-chevron-right text-[#555]"></i>`;
+                d.onclick = () => showModal(c);
+                cont.appendChild(d);
             });
         }
 
-        function showTab(tab) {
-            document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
-            document.getElementById('tab-' + tab).classList.remove('hidden');
-
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
-
-            if (tab === 'characters' && currentData) {
-                const container = document.getElementById('characters-list');
-                container.innerHTML = '';
-                allCharacters.forEach(char => {
-                    const div = document.createElement('div');
-                    div.className = 'data-row flex justify-between items-center px-4 py-3 border-b border-[#222] cursor-pointer';
-                    div.innerHTML = `
-                        <div>
-                            <div class="font-medium">${char.name}</div>
-                            <div class="text-xs text-[#666]">${char.chats.length} тредов • ${char.totalMessages} сообщений</div>
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-[#444]"></i>
-                    `;
-                    div.onclick = () => showCharacterModal(char);
-                    container.appendChild(div);
-                });
-            }
-        }
-
-        window.onload = () => console.log('%c[JanitorAI] Updated version loaded', 'color:#00f9ff');
+        window.onload = () => console.log('%c[WILD TOURISTS] Visual tree version ready', 'color:#00f9ff');
     </script>
 </body>
 </html>
