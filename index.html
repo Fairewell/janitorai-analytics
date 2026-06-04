@@ -35,10 +35,6 @@
             transform: translateY(-2px);
         }
 
-        .duckdb-table {
-            font-size: 13px;
-        }
-
         .section-title {
             font-size: 15px;
             font-weight: 600;
@@ -56,6 +52,10 @@
             color: white;
             border-radius: 6px;
         }
+
+        .loading-overlay {
+            animation: fadeIn 0.2s ease forwards;
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-200">
@@ -72,18 +72,17 @@
                 </div>
             </div>
             
-            <div class="flex items-center gap-x-2">
-                <div id="status-badge" 
-                     class="px-3 py-1.5 rounded-3xl bg-slate-900 border border-slate-700 text-xs flex items-center gap-x-2">
+            <div class="flex items-center gap-x-3">
+                <div id="status-badge" class="px-3 py-1.5 rounded-3xl bg-slate-900 border border-slate-700 text-xs flex items-center gap-x-2">
                     <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                    <span class="font-medium text-emerald-300">DuckDB WASM ready</span>
+                    <span class="font-medium text-emerald-300">DuckDB ready</span>
                 </div>
                 
-                <button onclick="exportResults()" 
-                        class="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-3xl text-sm flex items-center gap-x-2 transition-colors">
-                    <i class="fa-solid fa-download"></i>
-                    <span>Export CSV</span>
-                </button>
+                <a href="https://github.com/Fairewell/janitorai-analytics" target="_blank" 
+                   class="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-3xl text-sm flex items-center gap-x-2 transition-colors">
+                    <i class="fa-brands fa-github"></i>
+                    <span>GitHub</span>
+                </a>
             </div>
         </div>
 
@@ -95,7 +94,7 @@
                         <i class="fa-solid fa-file-import text-4xl text-slate-400"></i>
                     </div>
                     <h2 class="text-2xl font-semibold mb-2">Загрузи экспорт JanitorAI</h2>
-                    <p class="text-slate-400 mb-6">JSON файл, который ты экспортировал через скрипт</p>
+                    <p class="text-slate-400 mb-6">JSON файл из Tampermonkey скрипта (v1.4+)</p>
                     
                     <label class="cursor-pointer inline-flex items-center gap-x-3 bg-blue-600 hover:bg-blue-700 transition-colors px-8 py-3.5 rounded-3xl font-semibold">
                         <i class="fa-solid fa-upload"></i>
@@ -103,7 +102,10 @@
                         <input type="file" id="json-upload" accept=".json" class="hidden" onchange="handleFileUpload(event)">
                     </label>
                     
-                    <p class="text-xs text-slate-500 mt-4">Поддерживается формат экспорта из скрипта v1.4+</p>
+                    <div class="mt-6 text-xs text-slate-500">
+                        Всё обрабатывается в твоём браузере. Ничего не отправляется на сервер.<br>
+                        Данные остаются только у тебя.
+                    </div>
                 </div>
             </div>
 
@@ -168,26 +170,20 @@
                     </button>
                     <button onclick="showSection('sql')" class="nav-tab px-5 py-2 text-sm font-medium flex items-center gap-x-2 hover:bg-slate-900 rounded-xl" data-section="sql">
                         <i class="fa-solid fa-terminal w-4"></i>
-                        <span>SQL Query</span>
+                        <span>SQL</span>
                     </button>
                 </div>
 
                 <!-- Overview Section -->
                 <div id="section-overview">
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <!-- Top Characters -->
                         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="section-title">Топ персонажи по сообщениям</div>
-                            </div>
+                            <div class="section-title mb-4">Топ персонажи по сообщениям</div>
                             <div id="top-characters-list" class="space-y-3 text-sm"></div>
                         </div>
 
-                        <!-- Top Personas -->
                         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="section-title">Самые используемые персоны</div>
-                            </div>
+                            <div class="section-title mb-4">Самые используемые персоны</div>
                             <div id="top-personas-list" class="space-y-3 text-sm"></div>
                         </div>
                     </div>
@@ -196,9 +192,7 @@
                 <!-- Activity Section -->
                 <div id="section-activity" class="hidden">
                     <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="section-title">Активность по месяцам</div>
-                        </div>
+                        <div class="section-title mb-4">Активность по месяцам (сообщения)</div>
                         <div class="h-80">
                             <canvas id="activity-chart"></canvas>
                         </div>
@@ -209,13 +203,13 @@
                 <div id="section-top" class="hidden">
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
-                            <div class="section-title mb-4">Топ-15 персонажей по сообщениям</div>
-                            <div id="top-characters-full" class="max-h-[420px] overflow-auto"></div>
+                            <div class="section-title mb-4">Топ-15 по сообщениям</div>
+                            <div id="top-characters-full" class="max-h-[420px] overflow-auto text-sm"></div>
                         </div>
                         
                         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
-                            <div class="section-title mb-4">Топ персонажей по длине чатов</div>
-                            <div id="longest-chats" class="max-h-[420px] overflow-auto"></div>
+                            <div class="section-title mb-4">Самые длинные чаты</div>
+                            <div id="longest-chats" class="max-h-[420px] overflow-auto text-sm"></div>
                         </div>
                     </div>
                 </div>
@@ -224,21 +218,18 @@
                 <div id="section-sql" class="hidden">
                     <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
                         <div class="flex items-center justify-between mb-3">
-                            <div class="section-title">Custom SQL Query</div>
-                            <button onclick="runCustomQuery()" 
-                                    class="px-4 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 rounded-2xl flex items-center gap-x-2">
+                            <div class="section-title">Custom SQL (DuckDB)</div>
+                            <button onclick="runCustomQuery()" class="px-4 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 rounded-2xl flex items-center gap-x-2">
                                 <i class="fa-solid fa-play"></i>
-                                <span>Выполнить</span>
+                                <span>Run</span>
                             </button>
                         </div>
                         
-                        <textarea id="sql-query" rows="6" 
-                                  class="w-full bg-slate-950 border border-slate-700 font-mono text-sm p-4 rounded-2xl focus:outline-none focus:border-blue-500"
-                                  placeholder="SELECT name, chat_count FROM characters ORDER BY chat_count DESC LIMIT 10;"></textarea>
+                        <textarea id="sql-query" rows="5" class="w-full bg-slate-950 border border-slate-700 font-mono text-sm p-4 rounded-2xl focus:outline-none focus:border-blue-500" placeholder="SELECT name, SUM(chat_count) as messages FROM characters c LEFT JOIN chat_threads t ON c.character_id = t.character_id GROUP BY name ORDER BY messages DESC LIMIT 10;"></textarea>
                         
                         <div class="mt-4">
-                            <div class="text-xs text-slate-400 mb-2">Результаты:</div>
-                            <div id="sql-results" class="bg-slate-950 border border-slate-800 rounded-2xl p-4 max-h-[400px] overflow-auto text-sm font-mono"></div>
+                            <div class="text-xs text-slate-400 mb-2">Результат:</div>
+                            <div id="sql-results" class="bg-slate-950 border border-slate-800 rounded-2xl p-4 max-h-[380px] overflow-auto text-sm"></div>
                         </div>
                     </div>
                 </div>
@@ -251,7 +242,6 @@
         let currentData = null;
         let activityChart = null;
 
-        // Инициализация DuckDB
         async function initDuckDB() {
             try {
                 const JSDELIVR_BUNDLES = window.duckdb.getJsDelivrBundles();
@@ -266,16 +256,21 @@
                 db = new window.duckdb.AsyncDuckDB(logger, worker);
                 await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
                 
-                console.log('%c[DuckDB] Initialized successfully', 'color:#22c55e');
+                document.getElementById('status-badge').innerHTML = `
+                    <div class="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                    <span class="font-medium text-emerald-300">DuckDB ready</span>
+                `;
                 return true;
             } catch (error) {
-                console.error('DuckDB initialization failed:', error);
-                alert('Не удалось загрузить DuckDB. Попробуй обновить страницу.');
+                console.error(error);
+                document.getElementById('status-badge').innerHTML = `
+                    <div class="w-2 h-2 bg-red-400 rounded-full"></div>
+                    <span class="font-medium text-red-300">DuckDB error</span>
+                `;
                 return false;
             }
         }
 
-        // Обработка загрузки файла
         async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -286,7 +281,8 @@
             uploadSection.innerHTML = `
                 <div class="text-center py-12">
                     <i class="fa-solid fa-spinner fa-spin text-4xl text-blue-400 mb-4"></i>
-                    <p class="text-lg">Загружаем и обрабатываем данные...</p>
+                    <p class="text-lg">Обрабатываем данные в DuckDB...</p>
+                    <p class="text-sm text-slate-400 mt-2">Это может занять несколько секунд</p>
                 </div>
             `;
 
@@ -294,10 +290,12 @@
                 const text = await file.text();
                 currentData = JSON.parse(text);
                 
-                // Инициализируем DuckDB если ещё не инициализирован
                 if (!db) {
                     const success = await initDuckDB();
-                    if (!success) return;
+                    if (!success) {
+                        uploadSection.innerHTML = `<div class="text-center py-8 text-red-400">Не удалось загрузить DuckDB. Попробуй обновить страницу.</div>`;
+                        return;
+                    }
                 }
                 
                 await loadDataIntoDuckDB(currentData);
@@ -308,24 +306,25 @@
                 
             } catch (error) {
                 console.error(error);
-                alert('Ошибка при обработке файла: ' + error.message);
                 uploadSection.innerHTML = `
-                    <div class="text-center py-8 text-red-400">
-                        <p>Ошибка загрузки файла</p>
-                        <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-red-900/30 text-red-300 rounded-2xl text-sm">Попробовать снова</button>
+                    <div class="text-center py-8">
+                        <p class="text-red-400">Ошибка обработки файла</p>
+                        <p class="text-sm text-slate-400 mt-2">${error.message}</p>
+                        <button onclick="location.reload()" class="mt-4 px-6 py-2 bg-red-900/30 hover:bg-red-900/50 text-red-300 rounded-2xl text-sm">Попробовать снова</button>
                     </div>
                 `;
             }
         }
 
-        // Загрузка данных в DuckDB
         async function loadDataIntoDuckDB(data) {
             const conn = await db.connect();
             
             try {
-                // Создаём таблицу characters
+                await conn.query(`DROP TABLE IF EXISTS characters`);
+                await conn.query(`DROP TABLE IF EXISTS chat_threads`);
+
                 await conn.query(`
-                    CREATE TABLE IF NOT EXISTS characters (
+                    CREATE TABLE characters (
                         character_id VARCHAR,
                         name VARCHAR,
                         chat_count INTEGER,
@@ -335,19 +334,17 @@
                     )
                 `);
 
-                // Вставляем персонажей
                 if (data.characters && data.characters.length > 0) {
                     const values = data.characters.map(c => 
-                        `('${c.character_id}', '${c.name.replace(/'/g, "''")}', ${c.chat_count || 0}, 
-                         '${c.last_chat_date || null}', ${c.is_public}, ${c.is_deleted})`
+                        `('${c.character_id}', '${(c.name || '').replace(/'/g, "''")}', ${c.chat_count || 0}, 
+                         ${c.last_chat_date ? `'${c.last_chat_date}'` : 'NULL'}, ${c.is_public || false}, ${c.is_deleted || false})`
                     ).join(',');
                     
                     await conn.query(`INSERT INTO characters VALUES ${values}`);
                 }
 
-                // Создаём таблицу chat_threads
                 await conn.query(`
-                    CREATE TABLE IF NOT EXISTS chat_threads (
+                    CREATE TABLE chat_threads (
                         thread_id BIGINT,
                         character_id VARCHAR,
                         chat_count INTEGER,
@@ -356,47 +353,37 @@
                     )
                 `);
 
-                // Вставляем треды из detailedChats
                 if (data.detailedChats) {
                     let threadValues = [];
-                    
                     for (const [charId, detail] of Object.entries(data.detailedChats)) {
                         if (detail.chats) {
                             detail.chats.forEach(chat => {
-                                const persona = chat.personas && chat.personas[0] ? 
+                                const persona = (chat.personas && chat.personas[0] && chat.personas[0].name) ? 
                                     chat.personas[0].name.replace(/'/g, "''") : 'Unknown';
-                                
                                 threadValues.push(
                                     `(${chat.id}, '${charId}', ${chat.chat_count || 0}, 
-                                     '${chat.updated_at}', '${persona}')`
+                                     ${chat.updated_at ? `'${chat.updated_at}'` : 'NULL'}, '${persona}')`
                                 );
                             });
                         }
                     }
-                    
                     if (threadValues.length > 0) {
                         await conn.query(`INSERT INTO chat_threads VALUES ${threadValues.join(',')}`);
                     }
                 }
-                
-                console.log('%c[DuckDB] Data loaded successfully', 'color:#22c55e');
-                
             } finally {
                 await conn.close();
             }
         }
 
-        // Обновление всего дашборда
         async function updateDashboard() {
             const conn = await db.connect();
-            
             try {
-                // Основные метрики
                 const metrics = await conn.query(`
                     SELECT 
                         (SELECT COUNT(*) FROM characters) as total_characters,
                         (SELECT COUNT(*) FROM chat_threads) as total_threads,
-                        (SELECT SUM(chat_count) FROM chat_threads) as total_messages,
+                        (SELECT COALESCE(SUM(chat_count), 0) FROM chat_threads) as total_messages,
                         (SELECT COUNT(DISTINCT character_id) FROM chat_threads) as characters_with_details
                 `);
                 
@@ -404,18 +391,12 @@
                 
                 document.getElementById('stat-characters').textContent = m.total_characters.toLocaleString();
                 document.getElementById('stat-threads').textContent = m.total_threads.toLocaleString();
-                document.getElementById('stat-messages').textContent = (m.total_messages || 0).toLocaleString();
+                document.getElementById('stat-messages').textContent = m.total_messages.toLocaleString();
                 document.getElementById('stat-detailed').textContent = m.characters_with_details.toLocaleString();
 
-                // Топ персонажей
                 await loadTopCharacters(conn);
-                
-                // Топ персон
                 await loadTopPersonas(conn);
-                
-                // Активность по месяцам
                 await loadActivityChart(conn);
-                
             } finally {
                 await conn.close();
             }
@@ -444,7 +425,7 @@
                 div.innerHTML = `
                     <div class="flex items-center gap-x-3">
                         <div class="w-6 text-center text-xs text-slate-400 font-mono">${index + 1}</div>
-                        <div class="font-medium">${row.name}</div>
+                        <div class="font-medium truncate max-w-[220px]">${row.name}</div>
                     </div>
                     <div class="text-right">
                         <div class="font-semibold text-blue-400">${row.total_messages.toLocaleString()}</div>
@@ -490,7 +471,6 @@
             const result = await conn.query(`
                 SELECT 
                     strftime('%Y-%m', updated_at) as month,
-                    COUNT(*) as chats,
                     SUM(chat_count) as messages
                 FROM chat_threads
                 WHERE updated_at IS NOT NULL
@@ -512,7 +492,7 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Сообщений',
+                        label: 'Сообщений в месяц',
                         data: messagesData,
                         borderColor: '#3b82f6',
                         backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -524,9 +504,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
                         y: { beginAtZero: true, grid: { color: '#334155' } },
                         x: { grid: { color: '#334155' } }
@@ -535,24 +513,16 @@
             });
         }
 
-        // Показ секций
         function showSection(section) {
-            // Скрываем все секции
             document.querySelectorAll('[id^="section-"]').forEach(el => el.classList.add('hidden'));
-            
-            // Показываем нужную
             document.getElementById('section-' + section).classList.remove('hidden');
             
-            // Обновляем активную вкладку
             document.querySelectorAll('.nav-tab').forEach(tab => {
                 tab.classList.remove('nav-active');
-                if (tab.dataset.section === section) {
-                    tab.classList.add('nav-active');
-                }
+                if (tab.dataset.section === section) tab.classList.add('nav-active');
             });
         }
 
-        // Выполнение кастомного SQL
         async function runCustomQuery() {
             const query = document.getElementById('sql-query').value.trim();
             const resultsContainer = document.getElementById('sql-results');
@@ -563,7 +533,6 @@
             }
             
             const conn = await db.connect();
-            
             try {
                 const result = await conn.query(query);
                 const rows = result.toArray();
@@ -573,9 +542,7 @@
                     return;
                 }
                 
-                // Простая таблица результатов
                 let html = '<table class="w-full text-xs"><thead><tr>';
-                
                 const columns = Object.keys(rows[0]);
                 columns.forEach(col => {
                     html += `<th class="text-left py-2 px-3 border-b border-slate-700 font-medium">${col}</th>`;
@@ -587,28 +554,27 @@
                     columns.forEach(col => {
                         let val = row[col];
                         if (typeof val === 'number') val = val.toLocaleString();
-                        html += `<td class="py-2 px-3 border-b border-slate-800 font-mono">${val}</td>`;
+                        html += `<td class="py-2 px-3 border-b border-slate-800 font-mono">${val ?? ''}</td>`;
                     });
                     html += '</tr>';
                 });
                 
                 html += '</tbody></table>';
                 resultsContainer.innerHTML = html;
-                
             } catch (error) {
-                resultsContainer.innerHTML = `<div class="text-red-400 font-mono text-xs">Ошибка: ${error.message}</div>`;
+                resultsContainer.innerHTML = `<div class="text-red-400 text-xs">Ошибка: ${error.message}</div>`;
             } finally {
                 await conn.close();
             }
         }
 
         function exportResults() {
-            alert('Функция экспорта CSV будет добавлена в следующей версии');
+            alert('Экспорт CSV будет добавлен в следующей версии. Пока можно копировать из SQL результатов.');
         }
 
         // Инициализация
-        window.onload = function() {
-            console.log('%c[JanitorAI Analytics] Ready', 'color:#64748b');
+        window.onload = async function() {
+            console.log('%c[JanitorAI Analytics] Initialized', 'color:#64748b');
         }
     </script>
 </body>
