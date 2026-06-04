@@ -3,59 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JanitorAI Analytics • DuckDB</title>
+    <title>JanitorAI Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <script type="module">
-        import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.1-dev132.0/dist/duckdb-browser.mjs';
-        window.duckdb = duckdb;
-    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
         
-        :root {
-            --primary: #3b82f6;
-        }
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .font-display { font-family: 'Space Grotesk', 'Inter', sans-serif; font-weight: 600; }
+
+        .stat-card { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .stat-card:hover { transform: translateY(-2px); }
+
+        .section-title { font-size: 15px; font-weight: 600; color: #e2e8f0; }
+        .metric-value { font-size: 28px; font-weight: 700; line-height: 1; }
+
+        .nav-active { background-color: #1e2937; color: white; border-radius: 6px; }
         
-        body {
-            font-family: 'Inter', system_ui, sans-serif;
-        }
-        
-        .font-display {
-            font-family: 'Space Grotesk', 'Inter', sans-serif;
-            font-weight: 600;
-        }
-
-        .stat-card {
-            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .section-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: #e2e8f0;
-        }
-
-        .metric-value {
-            font-size: 28px;
-            font-weight: 700;
-            line-height: 1;
-        }
-
-        .nav-active {
-            background-color: #1e2937;
-            color: white;
-            border-radius: 6px;
-        }
-
-        .loading-overlay {
-            animation: fadeIn 0.2s ease forwards;
-        }
+        .data-table { font-size: 13px; }
+        .data-table th { font-weight: 600; color: #94a3b8; }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-200">
@@ -74,8 +41,8 @@
             
             <div class="flex items-center gap-x-3">
                 <div id="status-badge" class="px-3 py-1.5 rounded-3xl bg-slate-900 border border-slate-700 text-xs flex items-center gap-x-2">
-                    <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                    <span class="font-medium text-emerald-300">DuckDB ready</span>
+                    <div class="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                    <span class="font-medium text-emerald-300">Ready</span>
                 </div>
                 
                 <a href="https://github.com/Fairewell/janitorai-analytics" target="_blank" 
@@ -94,7 +61,7 @@
                         <i class="fa-solid fa-file-import text-4xl text-slate-400"></i>
                     </div>
                     <h2 class="text-2xl font-semibold mb-2">Загрузи экспорт JanitorAI</h2>
-                    <p class="text-slate-400 mb-6">JSON файл из Tampermonkey скрипта (v1.4+)</p>
+                    <p class="text-slate-400 mb-6">JSON файл из Tampermonkey скрипта</p>
                     
                     <label class="cursor-pointer inline-flex items-center gap-x-3 bg-blue-600 hover:bg-blue-700 transition-colors px-8 py-3.5 rounded-3xl font-semibold">
                         <i class="fa-solid fa-upload"></i>
@@ -103,15 +70,14 @@
                     </label>
                     
                     <div class="mt-6 text-xs text-slate-500">
-                        Всё обрабатывается в твоём браузере. Ничего не отправляется на сервер.<br>
-                        Данные остаются только у тебя.
+                        Всё обрабатывается в твоём браузере. Данные никуда не отправляются.
                     </div>
                 </div>
             </div>
 
-            <!-- Main Dashboard -->
+            <!-- Dashboard -->
             <div id="dashboard" class="hidden">
-                <!-- Summary Cards -->
+                <!-- Stats Cards -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                     <div class="stat-card bg-slate-900 border border-slate-800 rounded-3xl p-5">
                         <div class="flex justify-between items-start">
@@ -122,27 +88,24 @@
                             <i class="fa-solid fa-users text-3xl text-blue-400/70"></i>
                         </div>
                     </div>
-                    
                     <div class="stat-card bg-slate-900 border border-slate-800 rounded-3xl p-5">
                         <div class="flex justify-between items-start">
                             <div>
-                                <div class="text-sm text-slate-400">Чатов (тредов)</div>
+                                <div class="text-sm text-slate-400">Чатов</div>
                                 <div id="stat-threads" class="metric-value text-white mt-1">—</div>
                             </div>
                             <i class="fa-solid fa-comments text-3xl text-emerald-400/70"></i>
                         </div>
                     </div>
-                    
                     <div class="stat-card bg-slate-900 border border-slate-800 rounded-3xl p-5">
                         <div class="flex justify-between items-start">
                             <div>
-                                <div class="text-sm text-slate-400">Всего сообщений</div>
+                                <div class="text-sm text-slate-400">Сообщений</div>
                                 <div id="stat-messages" class="metric-value text-white mt-1">—</div>
                             </div>
                             <i class="fa-solid fa-align-left text-3xl text-violet-400/70"></i>
                         </div>
                     </div>
-                    
                     <div class="stat-card bg-slate-900 border border-slate-800 rounded-3xl p-5">
                         <div class="flex justify-between items-start">
                             <div>
@@ -154,82 +117,54 @@
                     </div>
                 </div>
 
-                <!-- Navigation -->
-                <div class="flex items-center gap-x-1 mb-6 border-b border-slate-800 pb-1">
-                    <button onclick="showSection('overview')" class="nav-tab px-5 py-2 text-sm font-medium flex items-center gap-x-2 nav-active" data-section="overview">
-                        <i class="fa-solid fa-home w-4"></i>
-                        <span>Обзор</span>
+                <!-- Tabs -->
+                <div class="flex gap-x-1 mb-6 border-b border-slate-800 pb-1">
+                    <button onclick="showTab('overview')" class="tab-btn px-5 py-2 text-sm font-medium flex items-center gap-x-2 nav-active" data-tab="overview">
+                        <i class="fa-solid fa-home w-4"></i> <span>Обзор</span>
                     </button>
-                    <button onclick="showSection('activity')" class="nav-tab px-5 py-2 text-sm font-medium flex items-center gap-x-2 hover:bg-slate-900 rounded-xl" data-section="activity">
-                        <i class="fa-solid fa-chart-line w-4"></i>
-                        <span>Активность</span>
+                    <button onclick="showTab('activity')" class="tab-btn px-5 py-2 text-sm font-medium flex items-center gap-x-2 hover:bg-slate-900 rounded-xl" data-tab="activity">
+                        <i class="fa-solid fa-chart-line w-4"></i> <span>Активность</span>
                     </button>
-                    <button onclick="showSection('top')" class="nav-tab px-5 py-2 text-sm font-medium flex items-center gap-x-2 hover:bg-slate-900 rounded-xl" data-section="top">
-                        <i class="fa-solid fa-trophy w-4"></i>
-                        <span>Топы</span>
-                    </button>
-                    <button onclick="showSection('sql')" class="nav-tab px-5 py-2 text-sm font-medium flex items-center gap-x-2 hover:bg-slate-900 rounded-xl" data-section="sql">
-                        <i class="fa-solid fa-terminal w-4"></i>
-                        <span>SQL</span>
+                    <button onclick="showTab('tops')" class="tab-btn px-5 py-2 text-sm font-medium flex items-center gap-x-2 hover:bg-slate-900 rounded-xl" data-tab="tops">
+                        <i class="fa-solid fa-trophy w-4"></i> <span>Топы</span>
                     </button>
                 </div>
 
-                <!-- Overview Section -->
-                <div id="section-overview">
+                <!-- Overview Tab -->
+                <div id="tab-overview">
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Top Characters -->
                         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
                             <div class="section-title mb-4">Топ персонажи по сообщениям</div>
-                            <div id="top-characters-list" class="space-y-3 text-sm"></div>
+                            <div id="top-characters" class="space-y-2 text-sm"></div>
                         </div>
 
+                        <!-- Top Personas -->
                         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
-                            <div class="section-title mb-4">Самые используемые персоны</div>
-                            <div id="top-personas-list" class="space-y-3 text-sm"></div>
+                            <div class="section-title mb-4">Топ персоны</div>
+                            <div id="top-personas" class="space-y-2 text-sm"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Activity Section -->
-                <div id="section-activity" class="hidden">
+                <!-- Activity Tab -->
+                <div id="tab-activity" class="hidden">
                     <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
-                        <div class="section-title mb-4">Активность по месяцам (сообщения)</div>
-                        <div class="h-80">
-                            <canvas id="activity-chart"></canvas>
-                        </div>
+                        <div class="section-title mb-4">Активность по месяцам</div>
+                        <div class="h-80"><canvas id="activity-chart"></canvas></div>
                     </div>
                 </div>
 
-                <!-- Top Section -->
-                <div id="section-top" class="hidden">
+                <!-- Tops Tab -->
+                <div id="tab-tops" class="hidden">
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
-                            <div class="section-title mb-4">Топ-15 по сообщениям</div>
-                            <div id="top-characters-full" class="max-h-[420px] overflow-auto text-sm"></div>
+                            <div class="section-title mb-4">Топ-20 персонажей</div>
+                            <div id="top-full" class="max-h-[500px] overflow-auto"></div>
                         </div>
-                        
                         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
                             <div class="section-title mb-4">Самые длинные чаты</div>
-                            <div id="longest-chats" class="max-h-[420px] overflow-auto text-sm"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SQL Section -->
-                <div id="section-sql" class="hidden">
-                    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6">
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="section-title">Custom SQL (DuckDB)</div>
-                            <button onclick="runCustomQuery()" class="px-4 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 rounded-2xl flex items-center gap-x-2">
-                                <i class="fa-solid fa-play"></i>
-                                <span>Run</span>
-                            </button>
-                        </div>
-                        
-                        <textarea id="sql-query" rows="5" class="w-full bg-slate-950 border border-slate-700 font-mono text-sm p-4 rounded-2xl focus:outline-none focus:border-blue-500" placeholder="SELECT name, SUM(chat_count) as messages FROM characters c LEFT JOIN chat_threads t ON c.character_id = t.character_id GROUP BY name ORDER BY messages DESC LIMIT 10;"></textarea>
-                        
-                        <div class="mt-4">
-                            <div class="text-xs text-slate-400 mb-2">Результат:</div>
-                            <div id="sql-results" class="bg-slate-950 border border-slate-800 rounded-2xl p-4 max-h-[380px] overflow-auto text-sm"></div>
+                            <div id="longest-chats" class="max-h-[500px] overflow-auto"></div>
                         </div>
                     </div>
                 </div>
@@ -238,37 +173,49 @@
     </div>
 
     <script>
-        let db = null;
         let currentData = null;
         let activityChart = null;
 
-        async function initDuckDB() {
-            try {
-                const JSDELIVR_BUNDLES = window.duckdb.getJsDelivrBundles();
-                const bundle = await window.duckdb.selectBundle(JSDELIVR_BUNDLES);
-                
-                const worker_url = URL.createObjectURL(
-                    new Blob([`importScripts("${bundle.mainWorker}");`], { type: 'text/javascript' })
-                );
-                
-                const worker = new Worker(worker_url);
-                const logger = new window.duckdb.ConsoleLogger();
-                db = new window.duckdb.AsyncDuckDB(logger, worker);
-                await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
-                
-                document.getElementById('status-badge').innerHTML = `
-                    <div class="w-2 h-2 bg-emerald-400 rounded-full"></div>
-                    <span class="font-medium text-emerald-300">DuckDB ready</span>
-                `;
-                return true;
-            } catch (error) {
-                console.error(error);
-                document.getElementById('status-badge').innerHTML = `
-                    <div class="w-2 h-2 bg-red-400 rounded-full"></div>
-                    <span class="font-medium text-red-300">DuckDB error</span>
-                `;
-                return false;
-            }
+        function processData(data) {
+            const characters = data.characters || [];
+            const detailed = data.detailedChats || {};
+
+            // Calculate messages per character
+            const charStats = {};
+            characters.forEach(c => {
+                charStats[c.character_id] = {
+                    ...c,
+                    totalMessages: 0,
+                    threadCount: c.chat_count || 0
+                };
+            });
+
+            let totalMessages = 0;
+            const personaCount = {};
+
+            Object.keys(detailed).forEach(charId => {
+                const chats = detailed[charId].chats || [];
+                chats.forEach(chat => {
+                    const msgs = chat.chat_count || 0;
+                    totalMessages += msgs;
+
+                    if (charStats[charId]) {
+                        charStats[charId].totalMessages += msgs;
+                    }
+
+                    const persona = (chat.personas && chat.personas[0]) ? chat.personas[0].name : 'Unknown';
+                    personaCount[persona] = (personaCount[persona] || 0) + msgs;
+                });
+            });
+
+            return {
+                characters: Object.values(charStats),
+                totalCharacters: characters.length,
+                totalThreads: characters.reduce((sum, c) => sum + (c.chat_count || 0), 0),
+                totalMessages,
+                detailedCount: Object.keys(detailed).length,
+                personaCount
+            };
         }
 
         async function handleFileUpload(event) {
@@ -277,223 +224,116 @@
 
             const uploadSection = document.getElementById('upload-section');
             const dashboard = document.getElementById('dashboard');
-            
+
             uploadSection.innerHTML = `
                 <div class="text-center py-12">
                     <i class="fa-solid fa-spinner fa-spin text-4xl text-blue-400 mb-4"></i>
-                    <p class="text-lg">Обрабатываем данные в DuckDB...</p>
-                    <p class="text-sm text-slate-400 mt-2">Это может занять несколько секунд</p>
+                    <p class="text-lg">Обрабатываем данные...</p>
                 </div>
             `;
 
             try {
                 const text = await file.text();
-                currentData = JSON.parse(text);
-                
-                if (!db) {
-                    const success = await initDuckDB();
-                    if (!success) {
-                        uploadSection.innerHTML = `<div class="text-center py-8 text-red-400">Не удалось загрузить DuckDB. Попробуй обновить страницу.</div>`;
-                        return;
-                    }
-                }
-                
-                await loadDataIntoDuckDB(currentData);
-                await updateDashboard();
-                
+                const rawData = JSON.parse(text);
+                currentData = processData(rawData);
+
+                updateStats(currentData);
+                renderTopCharacters(currentData);
+                renderTopPersonas(currentData);
+                renderActivityChart(rawData);
+                renderFullTop(currentData);
+                renderLongestChats(rawData);
+
                 uploadSection.style.display = 'none';
                 dashboard.classList.remove('hidden');
-                
-            } catch (error) {
-                console.error(error);
+
+            } catch (err) {
+                console.error(err);
                 uploadSection.innerHTML = `
-                    <div class="text-center py-8">
-                        <p class="text-red-400">Ошибка обработки файла</p>
-                        <p class="text-sm text-slate-400 mt-2">${error.message}</p>
-                        <button onclick="location.reload()" class="mt-4 px-6 py-2 bg-red-900/30 hover:bg-red-900/50 text-red-300 rounded-2xl text-sm">Попробовать снова</button>
+                    <div class="text-center py-8 text-red-400">
+                        <p>Ошибка обработки файла</p>
+                        <p class="text-sm mt-2">${err.message}</p>
+                        <button onclick="location.reload()" class="mt-4 px-6 py-2 bg-red-900/30 text-red-300 rounded-2xl text-sm">Попробовать снова</button>
                     </div>
                 `;
             }
         }
 
-        async function loadDataIntoDuckDB(data) {
-            const conn = await db.connect();
-            
-            try {
-                await conn.query(`DROP TABLE IF EXISTS characters`);
-                await conn.query(`DROP TABLE IF EXISTS chat_threads`);
-
-                await conn.query(`
-                    CREATE TABLE characters (
-                        character_id VARCHAR,
-                        name VARCHAR,
-                        chat_count INTEGER,
-                        last_chat_date TIMESTAMP,
-                        is_public BOOLEAN,
-                        is_deleted BOOLEAN
-                    )
-                `);
-
-                if (data.characters && data.characters.length > 0) {
-                    const values = data.characters.map(c => 
-                        `('${c.character_id}', '${(c.name || '').replace(/'/g, "''")}', ${c.chat_count || 0}, 
-                         ${c.last_chat_date ? `'${c.last_chat_date}'` : 'NULL'}, ${c.is_public || false}, ${c.is_deleted || false})`
-                    ).join(',');
-                    
-                    await conn.query(`INSERT INTO characters VALUES ${values}`);
-                }
-
-                await conn.query(`
-                    CREATE TABLE chat_threads (
-                        thread_id BIGINT,
-                        character_id VARCHAR,
-                        chat_count INTEGER,
-                        updated_at TIMESTAMP,
-                        persona_name VARCHAR
-                    )
-                `);
-
-                if (data.detailedChats) {
-                    let threadValues = [];
-                    for (const [charId, detail] of Object.entries(data.detailedChats)) {
-                        if (detail.chats) {
-                            detail.chats.forEach(chat => {
-                                const persona = (chat.personas && chat.personas[0] && chat.personas[0].name) ? 
-                                    chat.personas[0].name.replace(/'/g, "''") : 'Unknown';
-                                threadValues.push(
-                                    `(${chat.id}, '${charId}', ${chat.chat_count || 0}, 
-                                     ${chat.updated_at ? `'${chat.updated_at}'` : 'NULL'}, '${persona}')`
-                                );
-                            });
-                        }
-                    }
-                    if (threadValues.length > 0) {
-                        await conn.query(`INSERT INTO chat_threads VALUES ${threadValues.join(',')}`);
-                    }
-                }
-            } finally {
-                await conn.close();
-            }
+        function updateStats(data) {
+            document.getElementById('stat-characters').textContent = data.totalCharacters.toLocaleString();
+            document.getElementById('stat-threads').textContent = data.totalThreads.toLocaleString();
+            document.getElementById('stat-messages').textContent = data.totalMessages.toLocaleString();
+            document.getElementById('stat-detailed').textContent = data.detailedCount.toLocaleString();
         }
 
-        async function updateDashboard() {
-            const conn = await db.connect();
-            try {
-                const metrics = await conn.query(`
-                    SELECT 
-                        (SELECT COUNT(*) FROM characters) as total_characters,
-                        (SELECT COUNT(*) FROM chat_threads) as total_threads,
-                        (SELECT COALESCE(SUM(chat_count), 0) FROM chat_threads) as total_messages,
-                        (SELECT COUNT(DISTINCT character_id) FROM chat_threads) as characters_with_details
-                `);
-                
-                const m = metrics.toArray()[0];
-                
-                document.getElementById('stat-characters').textContent = m.total_characters.toLocaleString();
-                document.getElementById('stat-threads').textContent = m.total_threads.toLocaleString();
-                document.getElementById('stat-messages').textContent = m.total_messages.toLocaleString();
-                document.getElementById('stat-detailed').textContent = m.characters_with_details.toLocaleString();
-
-                await loadTopCharacters(conn);
-                await loadTopPersonas(conn);
-                await loadActivityChart(conn);
-            } finally {
-                await conn.close();
-            }
-        }
-
-        async function loadTopCharacters(conn) {
-            const result = await conn.query(`
-                SELECT 
-                    c.name,
-                    c.chat_count as threads,
-                    COALESCE(SUM(t.chat_count), 0) as total_messages
-                FROM characters c
-                LEFT JOIN chat_threads t ON c.character_id = t.character_id
-                GROUP BY c.character_id, c.name, c.chat_count
-                ORDER BY total_messages DESC
-                LIMIT 8
-            `);
-            
-            const rows = result.toArray();
-            const container = document.getElementById('top-characters-list');
+        function renderTopCharacters(data) {
+            const sorted = [...data.characters].sort((a, b) => b.totalMessages - a.totalMessages).slice(0, 8);
+            const container = document.getElementById('top-characters');
             container.innerHTML = '';
-            
-            rows.forEach((row, index) => {
+
+            sorted.forEach((char, i) => {
                 const div = document.createElement('div');
-                div.className = `flex justify-between items-center p-3 rounded-2xl ${index % 2 === 0 ? 'bg-slate-800/50' : ''}`;
+                div.className = `flex justify-between items-center p-3 rounded-2xl ${i % 2 === 0 ? 'bg-slate-800/50' : ''}`;
                 div.innerHTML = `
                     <div class="flex items-center gap-x-3">
-                        <div class="w-6 text-center text-xs text-slate-400 font-mono">${index + 1}</div>
-                        <div class="font-medium truncate max-w-[220px]">${row.name}</div>
+                        <span class="text-xs text-slate-400 w-5">${i+1}</span>
+                        <span class="font-medium truncate max-w-[220px]">${char.name}</span>
                     </div>
                     <div class="text-right">
-                        <div class="font-semibold text-blue-400">${row.total_messages.toLocaleString()}</div>
-                        <div class="text-[10px] text-slate-400 -mt-0.5">${row.threads} тредов</div>
+                        <div class="font-semibold text-blue-400">${char.totalMessages.toLocaleString()}</div>
+                        <div class="text-[10px] text-slate-400">${char.threadCount} тредов</div>
                     </div>
                 `;
                 container.appendChild(div);
             });
         }
 
-        async function loadTopPersonas(conn) {
-            const result = await conn.query(`
-                SELECT 
-                    persona_name,
-                    COUNT(*) as usage_count,
-                    SUM(chat_count) as total_messages
-                FROM chat_threads
-                WHERE persona_name != 'Unknown'
-                GROUP BY persona_name
-                ORDER BY total_messages DESC
-                LIMIT 8
-            `);
-            
-            const rows = result.toArray();
-            const container = document.getElementById('top-personas-list');
+        function renderTopPersonas(data) {
+            const sorted = Object.entries(data.personaCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 8);
+
+            const container = document.getElementById('top-personas');
             container.innerHTML = '';
-            
-            rows.forEach((row, index) => {
+
+            sorted.forEach(([name, count], i) => {
                 const div = document.createElement('div');
-                div.className = `flex justify-between items-center p-3 rounded-2xl ${index % 2 === 0 ? 'bg-slate-800/50' : ''}`;
+                div.className = `flex justify-between items-center p-3 rounded-2xl ${i % 2 === 0 ? 'bg-slate-800/50' : ''}`;
                 div.innerHTML = `
-                    <div class="font-medium">${row.persona_name}</div>
-                    <div class="text-right">
-                        <div class="font-semibold text-emerald-400">${row.total_messages.toLocaleString()}</div>
-                        <div class="text-[10px] text-slate-400">${row.usage_count} чатов</div>
-                    </div>
+                    <div class="font-medium">${name}</div>
+                    <div class="font-semibold text-emerald-400">${count.toLocaleString()}</div>
                 `;
                 container.appendChild(div);
             });
         }
 
-        async function loadActivityChart(conn) {
-            const result = await conn.query(`
-                SELECT 
-                    strftime('%Y-%m', updated_at) as month,
-                    SUM(chat_count) as messages
-                FROM chat_threads
-                WHERE updated_at IS NOT NULL
-                GROUP BY month
-                ORDER BY month
-            `);
-            
-            const rows = result.toArray();
-            
-            const labels = rows.map(r => r.month);
-            const messagesData = rows.map(r => r.messages);
-            
+        function renderActivityChart(rawData) {
+            const monthly = {};
+
+            if (rawData.detailedChats) {
+                Object.values(rawData.detailedChats).forEach(detail => {
+                    (detail.chats || []).forEach(chat => {
+                        if (chat.updated_at) {
+                            const month = chat.updated_at.substring(0, 7);
+                            monthly[month] = (monthly[month] || 0) + (chat.chat_count || 0);
+                        }
+                    });
+                });
+            }
+
+            const labels = Object.keys(monthly).sort();
+            const values = labels.map(m => monthly[m]);
+
             const ctx = document.getElementById('activity-chart');
-            
             if (activityChart) activityChart.destroy();
-            
+
             activityChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels,
                     datasets: [{
-                        label: 'Сообщений в месяц',
-                        data: messagesData,
+                        label: 'Сообщений',
+                        data: values,
                         borderColor: '#3b82f6',
                         backgroundColor: 'rgba(59, 130, 246, 0.1)',
                         borderWidth: 3,
@@ -513,69 +353,67 @@
             });
         }
 
-        function showSection(section) {
-            document.querySelectorAll('[id^="section-"]').forEach(el => el.classList.add('hidden'));
-            document.getElementById('section-' + section).classList.remove('hidden');
+        function renderFullTop(data) {
+            const sorted = [...data.characters].sort((a, b) => b.totalMessages - a.totalMessages);
+            const container = document.getElementById('top-full');
+            container.innerHTML = `<table class="w-full data-table"><thead><tr><th class="text-left py-2">#</th><th class="text-left py-2">Персонаж</th><th class="text-right py-2">Сообщений</th><th class="text-right py-2">Тредов</th></tr></thead><tbody></tbody></table>`;
             
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('nav-active');
-                if (tab.dataset.section === section) tab.classList.add('nav-active');
+            const tbody = container.querySelector('tbody');
+            sorted.forEach((char, i) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="py-1.5 px-2 text-slate-400">${i + 1}</td>
+                    <td class="py-1.5 px-2 font-medium">${char.name}</td>
+                    <td class="py-1.5 px-2 text-right font-semibold text-blue-400">${char.totalMessages.toLocaleString()}</td>
+                    <td class="py-1.5 px-2 text-right text-slate-400">${char.threadCount}</td>
+                `;
+                tbody.appendChild(row);
             });
         }
 
-        async function runCustomQuery() {
-            const query = document.getElementById('sql-query').value.trim();
-            const resultsContainer = document.getElementById('sql-results');
-            
-            if (!query) {
-                resultsContainer.innerHTML = '<div class="text-red-400">Введите SQL запрос</div>';
-                return;
-            }
-            
-            const conn = await db.connect();
-            try {
-                const result = await conn.query(query);
-                const rows = result.toArray();
-                
-                if (rows.length === 0) {
-                    resultsContainer.innerHTML = '<div class="text-slate-400">Нет результатов</div>';
-                    return;
-                }
-                
-                let html = '<table class="w-full text-xs"><thead><tr>';
-                const columns = Object.keys(rows[0]);
-                columns.forEach(col => {
-                    html += `<th class="text-left py-2 px-3 border-b border-slate-700 font-medium">${col}</th>`;
-                });
-                html += '</tr></thead><tbody>';
-                
-                rows.forEach(row => {
-                    html += '<tr>';
-                    columns.forEach(col => {
-                        let val = row[col];
-                        if (typeof val === 'number') val = val.toLocaleString();
-                        html += `<td class="py-2 px-3 border-b border-slate-800 font-mono">${val ?? ''}</td>`;
+        function renderLongestChats(rawData) {
+            const allChats = [];
+            if (rawData.detailedChats) {
+                Object.entries(rawData.detailedChats).forEach(([charId, detail]) => {
+                    (detail.chats || []).forEach(chat => {
+                        allChats.push({
+                            ...chat,
+                            character_name: detail.chats[0]?.character_name || 'Unknown'
+                        });
                     });
-                    html += '</tr>';
                 });
-                
-                html += '</tbody></table>';
-                resultsContainer.innerHTML = html;
-            } catch (error) {
-                resultsContainer.innerHTML = `<div class="text-red-400 text-xs">Ошибка: ${error.message}</div>`;
-            } finally {
-                await conn.close();
             }
+
+            const sorted = allChats.sort((a, b) => (b.chat_count || 0) - (a.chat_count || 0)).slice(0, 15);
+            const container = document.getElementById('longest-chats');
+            container.innerHTML = `<table class="w-full data-table"><thead><tr><th class="text-left py-2">Персонаж</th><th class="text-right py-2">Сообщений</th><th class="text-right py-2">Дата</th></tr></thead><tbody></tbody></table>`;
+            
+            const tbody = container.querySelector('tbody');
+            sorted.forEach(chat => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="py-1.5 px-2">${chat.character_name}</td>
+                    <td class="py-1.5 px-2 text-right font-semibold text-emerald-400">${(chat.chat_count || 0).toLocaleString()}</td>
+                    <td class="py-1.5 px-2 text-right text-xs text-slate-400">${chat.updated_at ? chat.updated_at.substring(0,10) : ''}</td>
+                `;
+                tbody.appendChild(row);
+            });
         }
 
-        function exportResults() {
-            alert('Экспорт CSV будет добавлен в следующей версии. Пока можно копировать из SQL результатов.');
+        function showTab(tab) {
+            document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('nav-active');
+                if (btn.dataset.tab === tab) btn.classList.add('nav-active');
+            });
         }
 
-        // Инициализация
-        window.onload = async function() {
-            console.log('%c[JanitorAI Analytics] Initialized', 'color:#64748b');
-        }
+        // Init
+        window.onload = () => {
+            console.log('%c[JanitorAI Analytics] Pure JS version loaded', 'color:#22c55e');
+        };
     </script>
 </body>
 </html>
